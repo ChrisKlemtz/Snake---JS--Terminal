@@ -14,10 +14,7 @@ const RESET = "\x1b[0m"; // ANSI escape code to reset color
 
 let snake = [{ x: 5, y: 5 }];
 let direction = { x: 1, y: 0 };
-let food = {
-  x: Math.floor(Math.random() * width),
-  y: Math.floor(Math.random() * height),
-};
+let food = {};
 let gameOver = false;
 let gameStarted = false;
 let score = 0; // Score variable
@@ -40,12 +37,32 @@ function saveHighScore() {
   }
 }
 
+// Function to generate food at a random position not occupied by the snake
+function generateFood() {
+  let newFoodPosition;
+  let isOnSnake;
+
+  do {
+    newFoodPosition = {
+      x: Math.floor(Math.random() * (width - 2)) + 1,
+      y: Math.floor(Math.random() * (height - 2)) + 1,
+    };
+
+    // Check if the new position is occupied by the snake
+    isOnSnake = snake.some(
+      (part) => part.x === newFoodPosition.x && part.y === newFoodPosition.y
+    );
+  } while (isOnSnake);
+
+  food = newFoodPosition;
+}
+
 function drawBoard() {
   let board = "";
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
       if (x === 0 || x === width - 1 || y === 0 || y === height - 1) {
-        board += "#"; //Wände
+        board += "#"; // Wände
       } else if (x === food.x && y === food.y) {
         board += "▪️"; // Essen
       } else {
@@ -85,10 +102,7 @@ function moveSnake() {
   // Check ob Snake essen isst
   if (head.x === food.x && head.y === food.y) {
     score++; // Increment score when the snake eats food
-    food = {
-      x: Math.floor(Math.random() * (width - 2)) + 1,
-      y: Math.floor(Math.random() * (height - 2)) + 1,
-    };
+    generateFood(); // Generate new food after eating
   } else {
     snake.pop(); // Ende der snake entfernen wenn kein essen
   }
@@ -162,14 +176,41 @@ function promptRestart() {
 function restartGame() {
   snake = [{ x: 5, y: 5 }];
   direction = { x: 1, y: 0 };
-  food = {
-    x: Math.floor(Math.random() * width),
-    y: Math.floor(Math.random() * height),
-  };
+  generateFood(); // Ensure food is generated in a valid position
   gameOver = false;
   gameStarted = false;
   score = 0; // Reset score on restart
   gameLoop();
+}
+
+// Function to display ASCII art from an external file and then start game after delay
+function displayAsciiArt() {
+  fs.readFile("startover.txt", "utf8", (err, data) => {
+    if (err) {
+      console.error("Fehler beim Lesen der ASCII-Art Datei:", err);
+      return;
+    }
+    console.clear();
+    console.log(data);
+
+    // Nach 4 Sekunden ASCII-Art ausblenden und das Spiel starten
+    setTimeout(() => {
+      console.clear();
+      waitForStart();
+    }, 4000);
+  });
+}
+
+function waitForStart() {
+  drawBoard();
+  console.log("Drücke eine Richtungstaste, um das Spiel zu starten.");
+  process.stdin.once("keypress", (str, key) => {
+    if (["w", "a", "s", "d"].includes(key.name)) {
+      gameStarted = true;
+      setDirection(key.name);
+      gameLoop(); // Start game loop after first key press
+    }
+  });
 }
 
 // Handling keyboard inputs for snake movement
@@ -181,7 +222,7 @@ process.stdin.on("keypress", (str, key) => {
   }
 });
 
-// Load high score and start the game
+// Load high score, generate initial food position, display ASCII art, and start the game
 loadHighScore();
-drawBoard();
-gameLoop();
+generateFood();
+displayAsciiArt();
