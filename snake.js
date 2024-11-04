@@ -1,7 +1,7 @@
 const readline = require("readline");
-const fs = require("fs"); // File system module
+const fs = require("fs"); // Dateisystemmodul
 
-// Terminal / Setup-keypress
+// Terminal / Setup für Tastendruck
 readline.emitKeypressEvents(process.stdin);
 process.stdin.setRawMode(true);
 
@@ -9,18 +9,18 @@ const width = 20;
 const height = 10;
 const initialLength = 3;
 
-const GREEN = "\x1b[32m"; // ANSI escape code for bright green
-const RESET = "\x1b[0m"; // ANSI escape code to reset color
+const GREEN = "\x1b[32m"; // ANSI-Escape-Code für hellgrüne Schrift
+const RESET = "\x1b[0m"; // ANSI-Escape-Code, um die Farbe zurückzusetzen
 
 let snake = [{ x: 5, y: 5 }];
 let direction = { x: 1, y: 0 };
 let food = {};
 let gameOver = false;
 let gameStarted = false;
-let score = 0; // Score variable
-let highScore = 0; // Highscore variable
+let score = 0; // Punktestand-Variable
+let highScore = 0; // Highscore-Variable
 
-// Function to load high score from file
+// Funktion zum Laden des Highscores aus einer Datei
 function loadHighScore() {
   if (fs.existsSync("highscore.txt")) {
     const data = fs.readFileSync("highscore.txt", "utf8");
@@ -28,7 +28,7 @@ function loadHighScore() {
   }
 }
 
-// Function to save high score to file
+// Funktion zum Speichern des Highscores in einer Datei
 function saveHighScore() {
   if (score > highScore) {
     highScore = score;
@@ -37,7 +37,7 @@ function saveHighScore() {
   }
 }
 
-// Function to generate food at a random position not occupied by the snake
+// Funktion zum Generieren von Essen an einer zufälligen Position, die nicht von der Schlange besetzt ist
 function generateFood() {
   let newFoodPosition;
   let isOnSnake;
@@ -48,7 +48,7 @@ function generateFood() {
       y: Math.floor(Math.random() * (height - 2)) + 1,
     };
 
-    // Check if the new position is occupied by the snake
+    // Überprüfen, ob die neue Position von der Schlange besetzt ist
     isOnSnake = snake.some(
       (part) => part.x === newFoodPosition.x && part.y === newFoodPosition.y
     );
@@ -73,14 +73,14 @@ function drawBoard() {
             break;
           }
         }
-        board += isSnake ? `${GREEN}O${RESET}` : " "; // Snake in giftgrün oder leerer Platz
+        board += isSnake ? `${GREEN}O${RESET}` : " "; // Schlange in giftgrün oder leerer Platz
       }
     }
     board += "\n";
   }
   console.clear();
   console.log(board);
-  console.log(`Score: ${score} | Highscore: ${highScore}`); // Display score and highscore
+  console.log(`Punktestand: ${score} | Highscore: ${highScore}`); // Punktestand und Highscore anzeigen
 }
 
 function moveSnake() {
@@ -99,12 +99,12 @@ function moveSnake() {
 
   snake.unshift(head);
 
-  // Check ob Snake essen isst
+  // Überprüfen, ob die Schlange Essen isst
   if (head.x === food.x && head.y === food.y) {
-    score++; // Increment score when the snake eats food
-    generateFood(); // Generate new food after eating
+    score++; // Punktestand erhöhen, wenn die Schlange das Essen frisst
+    generateFood(); // Neues Essen generieren, nachdem gegessen wurde
   } else {
-    snake.pop(); // Ende der snake entfernen wenn kein essen
+    snake.pop(); // Ende der Schlange entfernen, wenn kein Essen
   }
 }
 
@@ -120,7 +120,7 @@ function gameLoop() {
       if (["w", "a", "s", "d"].includes(key.name)) {
         gameStarted = true;
         setDirection(key.name);
-        gameLoop(); // Start game loop after first key press
+        gameLoop(); // Spielschleife nach dem ersten Tastendruck starten
       }
     });
     return;
@@ -128,7 +128,7 @@ function gameLoop() {
 
   if (gameOver) {
     displayGameOver();
-    setTimeout(() => promptRestart(), 1000); // Restart nach GameOver
+    setTimeout(() => promptRestart(), 1000); // Neustart nach Game Over
     return;
   }
 
@@ -157,8 +157,8 @@ function displayGameOver() {
     }
     console.clear();
     console.log(data);
-    console.log(`Final Score: ${score}`); // Display final score at game over
-    saveHighScore(); // Save high score when game over
+    console.log(`Endpunktestand: ${score}`); // Endpunktestand bei Game Over anzeigen
+    saveHighScore(); // Highscore bei Game Over speichern
   });
 }
 
@@ -176,14 +176,14 @@ function promptRestart() {
 function restartGame() {
   snake = [{ x: 5, y: 5 }];
   direction = { x: 1, y: 0 };
-  generateFood(); // Ensure food is generated in a valid position
+  generateFood(); // Sicherstellen, dass Essen an einer gültigen Position generiert wird
   gameOver = false;
   gameStarted = false;
-  score = 0; // Reset score on restart
+  score = 0; // Punktestand bei Neustart zurücksetzen
   gameLoop();
 }
 
-// Function to display ASCII art from an external file and then start game after delay
+// Funktion zum Anzeigen von ASCII-Art aus einer externen Datei und dann das Spiel nach einer Verzögerung starten
 function displayAsciiArt() {
   fs.readFile("startover.txt", "utf8", (err, data) => {
     if (err) {
@@ -208,12 +208,12 @@ function waitForStart() {
     if (["w", "a", "s", "d"].includes(key.name)) {
       gameStarted = true;
       setDirection(key.name);
-      gameLoop(); // Start game loop after first key press
+      gameLoop(); // Spielschleife nach dem ersten Tastendruck starten
     }
   });
 }
 
-// Handling keyboard inputs for snake movement
+// Tastatureingaben für die Bewegung der Schlange verarbeiten
 process.stdin.on("keypress", (str, key) => {
   if (gameStarted) {
     setDirection(key.name);
@@ -222,7 +222,7 @@ process.stdin.on("keypress", (str, key) => {
   }
 });
 
-// Load high score, generate initial food position, display ASCII art, and start the game
+// Highscore laden, anfängliche Essenposition generieren, ASCII-Art anzeigen und das Spiel starten
 loadHighScore();
 generateFood();
 displayAsciiArt();
