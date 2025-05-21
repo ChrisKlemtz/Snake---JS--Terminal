@@ -64,7 +64,7 @@ function drawBoard() {
       if (x === 0 || x === width - 1 || y === 0 || y === height - 1) {
         board += "#"; // Wände
       } else if (x === food.x && y === food.y) {
-        board += "▪️"; // Essen
+        board += "▪"; // Essen
       } else {
         let isSnake = false;
         for (let part of snake) {
